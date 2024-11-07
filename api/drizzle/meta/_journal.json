@@ -8,6 +8,13 @@
       "when": 1730800544427,
       "tag": "0000_sparkling_quasar",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1730992186662,
+      "tag": "0001_fine_mantis",
+      "breakpoints": true
     }
   ]
 }
