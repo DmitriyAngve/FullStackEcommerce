@@ -12,13 +12,14 @@ import {
   createProductSchema,
   updateProductSchema,
 } from "../../db/productsSchema";
+import { verifyToken } from "../../middlewares/authMiddelware";
 
 // products endpoints
 const router = Router();
 
 router.get("/", listProducts);
 router.get("/:id", getProductById);
-router.post("/", validateData(createProductSchema), createProduct);
+router.post("/", verifyToken, validateData(createProductSchema), createProduct);
 router.put("/:id", validateData(updateProductSchema), updateProduct);
 router.delete("/:id", deleteProduct);
 

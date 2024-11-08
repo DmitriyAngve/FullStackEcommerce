@@ -3,13 +3,20 @@ import {
   createUserSchema,
   loginSchema,
   usersTable,
-} from "../../db/usersSchema";
-import { validateData } from "../../middlewares/validationMiddleware";
+} from "../../db/usersSchema.js";
+import { validateData } from "../../middlewares/validationMiddleware.js";
 import bcrypt from "bcryptjs";
-import { db } from "../../db/index";
+import { db } from "../../db/index.js";
 import { eq } from "drizzle-orm";
+import jwt from "jsonwebtoken";
 
 const router = Router();
+
+const generateUserToken = (user: any) => {
+  return jwt.sign({ userId: user.id, role: user.role }, "your-secret", {
+    expiresIn: "30d",
+  });
+};
 
 router.post("/register", validateData(createUserSchema), async (req, res) => {
   try {
@@ -17,9 +24,15 @@ router.post("/register", validateData(createUserSchema), async (req, res) => {
     data.password = await bcrypt.hash(data.password, 10);
 
     const [user] = await db.insert(usersTable).values(data).returning();
-    res.status(201).json({ user });
+
+    // @ts-ignore
+    delete user.password;
+    const token = generateUserToken(user);
+
+    res.status(201).json({ user, token });
   } catch (e) {
-    res.status(500).send({ message: "Something went wrong" });
+    console.log(e);
+    res.status(500).send("Something went wrong");
   }
 });
 
@@ -31,22 +44,24 @@ router.post("/login", validateData(loginSchema), async (req, res) => {
       .select()
       .from(usersTable)
       .where(eq(usersTable.email, email));
-
     if (!user) {
       res.status(401).json({ error: "Authentication failed" });
       return;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    if (hashedPassword !== hashedPassword) {
+    const matched = await bcrypt.compare(password, user.password);
+    if (!matched) {
       res.status(401).json({ error: "Authentication failed" });
       return;
     }
 
-    // create jwt token
+    // create a jwt token
+    const token = generateUserToken(user);
+    // @ts-ignore
+    delete user.password;
+    res.status(200).json({ token, user });
   } catch (e) {
-    res.status(500).send({ message: "Something went wrong" });
+    res.status(500).send("Something went wrong");
   }
 });
 
