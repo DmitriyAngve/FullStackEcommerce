@@ -34,6 +34,7 @@ export async function getProductById(req: Request, res: Response) {
 
 export async function createProduct(req: Request, res: Response) {
   try {
+    console.log(req.userId);
     // вставка данных в таблицу productsTable. Метод values - принимает данные, которые будут вставлены в таблицу.
     const [product] = await db
       .insert(productsTable)
