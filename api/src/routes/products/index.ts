@@ -5,14 +5,14 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-} from "./productsController";
-import { validateData } from "../../middlewares/validationMiddleware";
+} from "./productsController.js";
+import { validateData } from "../../middlewares/validationMiddleware.js";
 
 import {
   createProductSchema,
   updateProductSchema,
-} from "../../db/productsSchema";
-import { verifySeller, verifyToken } from "../../middlewares/authMiddelware";
+} from "../../db/productsSchema.js";
+import { verifySeller, verifyToken } from "../../middlewares/authMiddelware.js";
 
 // products endpoints
 const router = Router();
@@ -26,7 +26,13 @@ router.post(
   validateData(createProductSchema),
   createProduct
 );
-router.put("/:id", validateData(updateProductSchema), updateProduct);
-router.delete("/:id", deleteProduct);
+router.put(
+  "/:id",
+  verifyToken,
+  verifySeller,
+  validateData(updateProductSchema),
+  updateProduct
+);
+router.delete("/:id", verifyToken, verifySeller, deleteProduct);
 
 export default router;
